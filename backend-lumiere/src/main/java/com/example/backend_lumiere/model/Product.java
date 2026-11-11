@@ -32,6 +32,5 @@ public class Product {
     private Integer stock;
 
     public Product() {
-    }
-    
+    }   
 }
