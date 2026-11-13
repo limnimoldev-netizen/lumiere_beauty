@@ -1,9 +1,7 @@
 import axios from 'axios'
 
-// Base URL of the Java Spring Boot REST API.
-// Change VITE_API_BASE_URL in the .env file when the backend is ready.
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api'
+// Vite proxies /api in development. An override should include /api once.
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api'
 
 // Create one Axios instance so all API requests share the same configuration.
 const apiClient = axios.create({
@@ -83,6 +81,13 @@ export const brandApi = {
       console.error('Unable to load brands:', error)
       throw error
     }
+  }
+}
+
+export const categoryApi = {
+  async getAll() {
+    const response = await apiClient.get('/categories')
+    return response.data
   }
 }
 

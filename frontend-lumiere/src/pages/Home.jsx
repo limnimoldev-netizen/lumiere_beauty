@@ -1,17 +1,56 @@
 import { Link } from 'react-router-dom'
+import { useEffect, useState } from 'react'
 import { ArrowRight, Leaf, Truck, ShieldCheck, Headphones, Sparkles } from 'lucide-react'
-import { useShop } from '../context/ShopContext'
+import { brandApi, categoryApi, productApi } from '../services/api'
 import ProductCard from '../components/ProductCard'
 
-const categories = [
-  { name: 'Skincare', image: '/images/serum.svg', tone: 'bg-[#ECEBDD]', description: 'Daily rituals, thoughtfully chosen' },
-  { name: 'Makeup', image: '/images/blush.svg', tone: 'bg-[#E4E8D5]', description: 'Color that feels like you' },
-  { name: 'Beauty Tools', image: '/images/fragrance.svg', tone: 'bg-[#F0EFE3]', description: 'The finishing touches' },
-]
+const categoryImages = {
+  skincare: '/images/serum.svg',
+  makeup: '/images/blush.svg',
+  fragrance: '/images/fragrance.svg',
+  haircare: '/images/cleanser.svg'
+}
+const categoryTones = ['bg-[#ECEBDD]', 'bg-[#E4E8D5]', 'bg-[#F0EFE3]']
 
 export default function Home() {
-  const { products } = useShop()
-  const featured = products.filter(p => p.status === 'Active').slice(0, 4)
+  const [catalogue, setCatalogue] = useState({ brands: [], categories: [], products: [] })
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+  const [reload, setReload] = useState(0)
+
+  useEffect(() => {
+    let current = true
+    async function loadCatalogue() {
+      setLoading(true)
+      setError('')
+      try {
+        const [brands, categories, products] = await Promise.all([
+          brandApi.getAll(), categoryApi.getAll(), productApi.getAll()
+        ])
+        if (!Array.isArray(brands) || !Array.isArray(categories) || !Array.isArray(products)) {
+          throw new Error('Unexpected catalogue response')
+        }
+        if (current) setCatalogue({ brands, categories, products })
+      } catch {
+        if (current) setError('We could not load the catalogue. Please try again.')
+      } finally {
+        if (current) setLoading(false)
+      }
+    }
+    loadCatalogue()
+    return () => { current = false }
+  }, [reload])
+
+  const brandNames = new Map(catalogue.brands.map(brand => [String(brand.id), brand.name]))
+  const categoryNames = new Map(catalogue.categories.map(category => [String(category.id), category.name]))
+  const featured = catalogue.products
+    .filter(product => String(product.status).toLowerCase() === 'active')
+    .slice(0, 4)
+    .map(product => ({
+      ...product,
+      brand: brandNames.get(String(product.brandId)) || 'Unknown brand',
+      category: categoryNames.get(String(product.categoryId)) || 'Unknown category'
+    }))
   return <>
     <section className="hero-luxe relative overflow-hidden">
       <div className="container-page relative z-10 grid min-h-[540px] items-center gap-8 py-14 md:grid-cols-[.92fr_1.08fr] md:py-12">
@@ -44,11 +83,16 @@ export default function Home() {
     </section>
     <section className="container-page py-16 md:py-20">
       <div className="flex items-end justify-between"><div><p className="eyebrow text-sage">Find your favourites</p><h2 className="mt-3 font-display text-4xl text-wine md:text-5xl">Shop by Category</h2></div><Link to="/shop" className="hidden items-center gap-2 text-sm font-semibold text-wine hover:text-rose md:flex">View all <ArrowRight size={16}/></Link></div>
-      <div className="mt-8 grid gap-5 md:grid-cols-3">{categories.map(item=><Link key={item.name} to={`/shop?category=${encodeURIComponent(item.name)}`} className={`category-tile group relative overflow-hidden rounded-2xl ${item.tone}`}><img src={item.image} alt={item.name} className="h-[190px] w-full object-cover transition duration-500 group-hover:scale-105"/><div className="absolute inset-x-0 bottom-0 flex items-center justify-between bg-[#FBF8F2]/90 px-5 py-4 backdrop-blur-sm"><div><p className="font-display text-2xl text-wine">{item.name}</p><p className="mt-1 text-[11px] text-muted">{item.description}</p></div><span className="grid h-9 w-9 place-items-center rounded-full bg-rose text-white"><ArrowRight size={17}/></span></div></Link>)}</div>
+      {loading && <p className="mt-8 text-sm text-muted" role="status">Loading categories…</p>}
+      {error && <div className="mt-8 text-sm text-rose" role="alert">{error} <button className="underline" onClick={() => setReload(value => value + 1)}>Retry</button></div>}
+      {!loading && !error && catalogue.categories.length === 0 && <p className="mt-8 text-sm text-muted">No categories available yet.</p>}
+      {!loading && !error && <div className="mt-8 grid gap-5 md:grid-cols-3">{catalogue.categories.map((item, index)=><Link key={item.id} to={`/shop?category=${encodeURIComponent(item.name)}`} className={`category-tile group relative overflow-hidden rounded-2xl ${categoryTones[index % categoryTones.length]}`}><img src={categoryImages[item.name.toLowerCase()] || '/images/cream.svg'} alt="" className="h-[190px] w-full object-cover transition duration-500 group-hover:scale-105"/><div className="absolute inset-x-0 bottom-0 flex items-center justify-between bg-[#FBF8F2]/90 px-5 py-4 backdrop-blur-sm"><div><p className="font-display text-2xl text-wine">{item.name}</p><p className="mt-1 text-[11px] text-muted">{item.description}</p></div><span className="grid h-9 w-9 place-items-center rounded-full bg-rose text-white"><ArrowRight size={17}/></span></div></Link>)}</div>}
     </section>
     <section className="bg-[#ECEBDD] py-16 md:py-20">
       <div className="container-page flex items-end justify-between"><div><p className="eyebrow text-sage">The Lumière edit</p><h2 className="mt-3 font-display text-4xl text-wine md:text-5xl">Beauty worth discovering</h2><p className="mt-3 max-w-lg text-sm leading-6 text-muted">Explore considered favourites from the brands you love.</p></div><Link to="/shop" className="hidden items-center gap-2 text-sm font-semibold text-wine md:flex">Shop all <ArrowRight size={16}/></Link></div>
-      <div className="container-page mt-9 grid grid-cols-2 gap-x-5 gap-y-9 md:grid-cols-4">{featured.map(p=><ProductCard key={p.id} product={p}/>)}</div>
+      {loading && <p className="container-page mt-9 text-sm text-muted" role="status">Loading products…</p>}
+      {!loading && !error && featured.length === 0 && <p className="container-page mt-9 text-sm text-muted">No products available yet.</p>}
+      {!loading && !error && <div className="container-page mt-9 grid grid-cols-2 gap-x-5 gap-y-9 md:grid-cols-4">{featured.map(p=><ProductCard key={p.id} product={p}/>)}</div>}
       <div className="container-page mt-8 text-center md:hidden"><Link to="/shop" className="btn-outline">Explore all products</Link></div>
     </section>
     <section className="container-page grid items-center gap-8 py-16 md:grid-cols-2 md:py-20">
@@ -61,13 +105,12 @@ export default function Home() {
         <h2 className="mt-3 font-display text-3xl text-wine md:text-4xl">Your favourite brands, all in one place</h2>
         <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-muted">Discover carefully selected beauty essentials from the names you love.</p>
         <div className="mt-9 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-6 md:gap-4">
-          {[
-            ['Dior','DIOR'],['Rare Beauty','rare beauty'],['Fenty Beauty','FENTY'],['The Ordinary','The Ordinary'],['CeraVe','CeraVe'],['Laneige','LANEIGE']
-          ].map(([name, wordmark]) => <Link key={name} to={`/shop?brand=${encodeURIComponent(name)}`} className="group flex min-h-[104px] flex-col items-center justify-center rounded-2xl border border-line bg-[#F5F3E9] px-3 py-5 transition duration-300 hover:-translate-y-1 hover:border-gold hover:bg-white hover:shadow-soft">
-            <span className={`font-display text-xl tracking-wide text-ink/70 transition group-hover:text-wine ${name === 'Fenty Beauty' ? 'font-sans text-base font-semibold tracking-[.18em]' : ''} ${name === 'Laneige' ? 'font-sans text-lg font-semibold tracking-[.12em]' : ''}`}>{wordmark}</span>
-            <span className="mt-2 text-[9px] font-semibold uppercase tracking-[.18em] text-sage">{name}</span>
+          {!loading && !error && catalogue.brands.map(brand => <Link key={brand.id} to={`/shop?brand=${encodeURIComponent(brand.name)}`} className="group flex min-h-[104px] flex-col items-center justify-center rounded-2xl border border-line bg-[#F5F3E9] px-3 py-5 transition duration-300 hover:-translate-y-1 hover:border-gold hover:bg-white hover:shadow-soft">
+            <span className="font-display text-xl tracking-wide text-ink/70 transition group-hover:text-wine">{brand.name}</span>
           </Link>)}
         </div>
+        {loading && <p className="mt-8 text-sm text-muted" role="status">Loading brands…</p>}
+        {!loading && !error && catalogue.brands.length === 0 && <p className="mt-8 text-sm text-muted">No brands available yet.</p>}
       </div>
     </section>
   </>
