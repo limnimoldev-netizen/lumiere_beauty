@@ -24,8 +24,8 @@ public class Product {
 
     private String description;
 
-    // @Column(name = "image_url")
-    // private String imageUrl;
+    @Column(name = "image_url")
+    private String imageUrl;
 
     private String status;
 
