@@ -1,12 +1,12 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Search, SlidersHorizontal } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
-import { useShop } from "../context/ShopContext";
 import { categories, brands } from "../data/products";
+import { productApi } from "../services/api";
 import ProductCard from "../components/ProductCard";
 
 export default function Shop() {
-  const { products } = useShop();
+  const [products, setProducts] = useState([]);
   const [params, setParams] = useSearchParams();
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState("featured");
@@ -18,19 +18,32 @@ export default function Shop() {
     else next.set("brand", value);
     setParams(next);
   };
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const data = await productApi.getAll();
+
+        setProducts(data);
+      } catch (error) {
+        console.error("Failed to fetch products:", error);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
   const filtered = useMemo(() => {
     let list = products.filter(
       (p) =>
-        p.status === "Active" &&
-        (active === "All" || p.category === active) &&
-        (brand === "All" || p.brand === brand) &&
-        `${p.name} ${p.brand}`.toLowerCase().includes(query.toLowerCase()),
+        p.status === "ACTIVE" &&
+        p.name.toLowerCase().includes(query.toLowerCase()),
     );
     if (sort === "low") list.sort((a, b) => a.price - b.price);
     if (sort === "high") list.sort((a, b) => b.price - a.price);
     if (sort === "name") list.sort((a, b) => a.name.localeCompare(b.name));
     return list;
-  }, [products, active, brand, query, sort]);
+  }, [products, query, sort]);
   return (
     <main className="container-page py-12">
       <div className="text-center">
@@ -84,7 +97,7 @@ export default function Shop() {
             <input
               type="search"
               className="h-12 w-full min-w-0 rounded-xl border border-line bg-white pl-11 pr-4 text-sm text-ink outline-none transition placeholder:text-muted/70 hover:border-rose/60 focus:border-rose focus:ring-4 focus:ring-rose/10"
-              placeholder="Search products or brands"
+              placeholder="Search products"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
             />
