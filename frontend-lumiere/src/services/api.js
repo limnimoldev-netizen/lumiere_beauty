@@ -134,4 +134,17 @@ export const orderApi = {
   }
 }
 
+export const dashboardApi = {
+  // GET /api/admin/dashboard
+  async get() {
+    try {
+      const response = await apiClient.get('/admin/dashboard')
+      return response.data
+    } catch (error) {
+      console.error('Unable to load dashboard:', error)
+      throw error
+    }
+  }
+}
+
 export default apiClient
