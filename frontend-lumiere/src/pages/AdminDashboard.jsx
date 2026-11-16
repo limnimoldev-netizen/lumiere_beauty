@@ -72,6 +72,10 @@ export default function AdminDashboard() {
           ))}
         </div>
       </div>
+
+      <p className="mt-3 text-xs text-muted">
+        Showing {products.length} of {data?.totalProducts ?? 0} products · Data is loaded from the database.
+      </p>
     </>
   )
 }
