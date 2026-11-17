@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { authAPI } from "../services/api.js";
+import { authApi } from "../services/api.js";
 import { useAuth } from "../context/AuthContext";
 
 export default function Auth({ register = false }) {
@@ -27,8 +27,8 @@ export default function Auth({ register = false }) {
 
     try {
       const result = register
-        ? await authAPI.register(formData)
-        : await authAPI.login({
+        ? await authApi.register(formData)
+        : await authApi.login({
             email: formData.email,
             password: formData.password,
           });

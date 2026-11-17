@@ -1,11 +1,9 @@
-import axios from 'axios'
+import axios from "axios";
 
-// Base URL of the Java Spring Boot REST API.
-// Change VITE_API_BASE_URL in the .env file when the backend is ready.
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:8080/api";
+// Vite proxies /api in development. An override should include /api once.
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "/api";
 
-// Create one Axios instance so all API requests share the same configuration.
+// One Axios instance so all API requests share the same configuration.
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
   headers: {
@@ -14,8 +12,6 @@ const apiClient = axios.create({
   timeout: 10000,
 });
 
-// Axios returns the response body inside response.data.
-// async/await makes asynchronous HTTP requests easier to read.
 export const productApi = {
   // GET /api/products
   async getAll() {
@@ -73,6 +69,10 @@ export const productApi = {
   },
 };
 
+// Backward-compatible alias so files still importing `productAPI` keep working.
+// Remove it once `grep -rn "productAPI" frontend-lumiere/src` returns nothing.
+export const productAPI = productApi;
+
 export const brandApi = {
   // GET /api/brands
   async getAll() {
@@ -83,10 +83,23 @@ export const brandApi = {
       console.error("Unable to load brands:", error);
       throw error;
     }
-  }
-}
+  },
+};
 
-export const authAPI = {
+export const categoryApi = {
+  // GET /api/categories
+  async getAll() {
+    try {
+      const response = await apiClient.get("/categories");
+      return response.data;
+    } catch (error) {
+      console.error("Unable to load categories:", error);
+      throw error;
+    }
+  },
+};
+
+export const authApi = {
   // POST /api/auth/login
   async login(credentials) {
     try {
@@ -98,7 +111,7 @@ export const authAPI = {
     }
   },
 
-  // POST /api/auth/register
+  // POST /api/users (registration)
   async register(accountData) {
     try {
       const response = await apiClient.post("/users", accountData);
@@ -131,7 +144,20 @@ export const orderApi = {
       console.error("Unable to load orders:", error);
       throw error;
     }
-  }
-}
+  },
+};
 
-export default apiClient
+export const dashboardApi = {
+  // GET /api/admin/dashboard
+  async get() {
+    try {
+      const response = await apiClient.get("/admin/dashboard");
+      return response.data;
+    } catch (error) {
+      console.error("Unable to load dashboard:", error);
+      throw error;
+    }
+  },
+};
+
+export default apiClient;
