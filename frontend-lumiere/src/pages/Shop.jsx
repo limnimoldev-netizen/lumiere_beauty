@@ -40,16 +40,29 @@ export default function Shop() {
   }, []);
 
   const filtered = useMemo(() => {
-    let list = products.filter(
-      (p) =>
+    let list = products.filter((p) => {
+      const productBrand = brands.find(
+        (b) => Number(b.id) === Number(p.brandId)
+      );
+
+      const productCategory = categories.find(
+        (c) => Number(c.id) === Number(p.categoryId)
+      );
+
+      return (
         p.status === "ACTIVE" &&
-        p.name.toLowerCase().includes(query.toLowerCase()),
-    );
+        (brand === "All" || productBrand?.name === brand) &&
+        (active === "All" || productCategory?.name === active) &&
+        p.name.toLowerCase().includes(query.toLowerCase())
+      );
+    });
+
     if (sort === "low") list.sort((a, b) => a.price - b.price);
     if (sort === "high") list.sort((a, b) => b.price - a.price);
     if (sort === "name") list.sort((a, b) => a.name.localeCompare(b.name));
+
     return list;
-  }, [products, query, sort]);
+  }, [products, brands, categories, brand, active, query, sort]);
   return (
     <main className="container-page py-12">
       <div className="text-center">
