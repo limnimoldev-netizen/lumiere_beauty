@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Search, SlidersHorizontal } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
-import { categories, brands } from "../data/products";
 import { productApi, brandApi, categoryApi } from "../services/api";
 import ProductCard from "../components/ProductCard";
 
