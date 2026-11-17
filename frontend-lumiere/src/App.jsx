@@ -19,6 +19,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import AdminProducts from "./pages/AdminProducts";
 import AdminProductForm from "./pages/AdminProductForm";
 import AdminUsers from "./pages/AdminUsers";
+import RequireAuth from './components/RequireAuth'
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -41,11 +42,11 @@ function StoreLayout() {
         <Route path="/shop" element={<Shop />} />
         <Route path="/products/:id" element={<ProductDetail />} />
         <Route path="/cart" element={<Cart />} />
-        <Route path="/checkout" element={<Checkout />} />
+        <Route path="/checkout" element={<RequireAuth><Checkout /></RequireAuth>} />
         <Route path="/login" element={<Auth />} />
         <Route path="/register" element={<Auth register />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/orders" element={<Orders />} />
+        <Route path="/profile" element={<RequireAuth><Profile /></RequireAuth>} />
+        <Route path="/orders" element={<RequireAuth><Orders /></RequireAuth>} />
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="*" element={<Home />} />
