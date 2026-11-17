@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/products")
+@RequestMapping("/api/products")  
 @CrossOrigin(origins = "http://localhost:5173")
 public class ProductController {
 
@@ -35,6 +35,9 @@ public class ProductController {
         return productService.updateProduct(id, product);
     }
 
+    @DeleteMapping("/{id}")
+    public void deleteProduct(@PathVariable Long id) {
+        productService.deleteProduct(id);
+    }
 
-    
 }
