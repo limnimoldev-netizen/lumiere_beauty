@@ -1,7 +1,4 @@
-import axios from "axios";
-import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
-
+import axios from 'axios'
 
 // Base URL of the Java Spring Boot REST API.
 // Change VITE_API_BASE_URL in the .env file when the backend is ready.
@@ -86,8 +83,8 @@ export const brandApi = {
       console.error("Unable to load brands:", error);
       throw error;
     }
-  },
-};
+  }
+}
 
 export const authAPI = {
   // POST /api/auth/login
@@ -134,7 +131,7 @@ export const orderApi = {
       console.error("Unable to load orders:", error);
       throw error;
     }
-  },
-};
+  }
+}
 
-export default apiClient;
+export default apiClient
