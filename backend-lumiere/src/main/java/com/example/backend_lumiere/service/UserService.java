@@ -27,9 +27,22 @@ public class UserService {
     }
 
     // Create user
-    public User createUser(User user) {
-        return userRepository.save(user);
+   public User createUser(User user) {
+    if (user.getRole() == null || user.getRole().isBlank()) {
+        user.setRole("USER");
     }
+    return userRepository.save(user);
+}
+    //login user
+    public User login(String email, String password) {
+    User user = userRepository.findByEmail(email)
+            .orElseThrow(() -> new RuntimeException("Invalid email or password"));
+
+    if (!user.getPassword().equals(password)) {
+        throw new RuntimeException("Invalid email or password");
+    }
+    return user;
+}
 
     // Update user
     public User updateUser(Long id, User newUser) {
