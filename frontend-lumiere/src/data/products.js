@@ -23,7 +23,7 @@ export const initialProducts = [
     featured: true,
     imageUrl: "/images/blush.svg",
     description:
-      "Sample cream blush listing with a lightweight, blendable finish.",
+      "Sample cream blush l isting with a lightweight, blendable finish.",
   },
   {
     id: "P-1003",
