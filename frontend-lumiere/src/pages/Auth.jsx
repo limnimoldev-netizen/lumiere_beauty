@@ -1,11 +1,15 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { authApi } from "../services/api.js";
 import { useAuth } from "../context/AuthContext";
 
 export default function Auth({ register = false }) {
   const navigate = useNavigate();
+  const location = useLocation();
   const { login } = useAuth();
+
+  // Where to go after success (e.g. "/checkout"); defaults to home.
+  const redirectTo = location.state?.from || "/";
 
   const title = register ? "Create your account" : "Welcome back";
 
@@ -34,7 +38,7 @@ export default function Auth({ register = false }) {
           });
 
       login(result.data ?? result);
-      navigate("/");
+      navigate(redirectTo, { replace: true });
     } catch (error) {
       console.error(error);
 
@@ -103,6 +107,7 @@ export default function Auth({ register = false }) {
           <Link
             className="font-semibold text-rose"
             to={register ? "/login" : "/register"}
+            state={{ from: redirectTo }}
           >
             {register ? "Sign in" : "Create an account"}
           </Link>
