@@ -2,11 +2,14 @@ import { useEffect, useMemo, useState } from "react";
 import { Search, SlidersHorizontal } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 import { categories, brands } from "../data/products";
-import { productApi } from "../services/api";
+import { productApi, brandApi, categoryApi } from "../services/api";
 import ProductCard from "../components/ProductCard";
 
 export default function Shop() {
   const [products, setProducts] = useState([]);
+  const [brands, setBrands] = useState([]);
+  const [categories, setCategories] = useState([]);
+
   const [params, setParams] = useSearchParams();
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState("featured");
@@ -22,9 +25,13 @@ export default function Shop() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const data = await productApi.getAll();
-
-        setProducts(data);
+        const productsData = await productApi.getAll();
+        const brandsData = await brandApi.getAll();
+        const categoriesData = await categoryApi.getAll();
+        
+        setBrands(brandsData);
+        setCategories(categoriesData);
+        setProducts(productsData);
       } catch (error) {
         console.error("Failed to fetch products:", error);
       }
@@ -56,15 +63,13 @@ export default function Shop() {
       <div className="mt-9 rounded-2xl bg-cream p-5">
         <p className="eyebrow text-muted">Shop by brand</p>
         <div className="mt-3 flex flex-wrap gap-2">
-          {brands
-            .filter((b) => b !== "All")
-            .map((b) => (
+          {brands.map((b) => (
               <button
-                key={b}
-                onClick={() => selectBrand(b)}
-                className={`rounded-full border px-4 py-2 text-xs ${brand === b ? "border-ink bg-ink text-white" : "border-line bg-white text-ink/75 hover:border-rose"}`}
+                key={b.id}
+                onClick={() => selectBrand(b.name)}
+                className={`rounded-full border px-4 py-2 text-xs ${brand === b.name ? "border-ink bg-ink text-white" : "border-line bg-white text-ink/75 hover:border-rose"}`}
               >
-                {b}
+                {b.name}
               </button>
             ))}
           <button
@@ -79,11 +84,11 @@ export default function Shop() {
         <div className="flex flex-wrap gap-2">
           {categories.map((c) => (
             <button
-              key={c}
-              onClick={() => setParams(c === "All" ? {} : { category: c })}
-              className={`rounded-full px-4 py-2 text-xs ${active === c ? "bg-ink text-white" : "bg-cream text-ink/70"}`}
+              key={c.id}
+              onClick={() => setParams({ category: c.name })}
+              className={`rounded-full px-4 py-2 text-xs ${active === c.name ? "bg-ink text-white" : "bg-cream text-ink/70"}`}
             >
-              {c}
+              {c.name}
             </button>
           ))}
         </div>
