@@ -14,6 +14,8 @@ const empty = {
   status: "ACTIVE",
   imageUrl: "",
   description: "",
+  featured: false,
+  bestseller: false,
 };
 export default function AdminProductForm() {
   const { id } = useParams();
@@ -187,6 +189,26 @@ export default function AdminProductForm() {
               <option value="ACTIVE">Active</option>
               <option value="DRAFT">Draft</option>
             </select>
+          </label>
+
+          <label className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              name="featured"
+              checked={form.featured}
+              onChange={change}
+            />
+            Featured Product
+          </label>
+
+          <label className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              name="bestseller"
+              checked={form.bestseller}
+              onChange={change}
+            />
+            Bestseller
           </label>
           <label className="text-xs font-semibold md:col-span-2">
             Image URL
