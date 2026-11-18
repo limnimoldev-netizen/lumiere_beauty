@@ -29,6 +29,10 @@ public class User {
     @Column(nullable = false, length = 20)
     private String role = "USER";
 
+    // Nullable for existing rows; a missing value means the account is active.
+    @Column(name = "active")
+    private Boolean active = true;
+
     public User() {
     }
 
@@ -71,5 +75,13 @@ public class User {
 
     public void setRole(String role) {
         this.role = role;
+    }
+
+    public boolean isActive() {
+        return !Boolean.FALSE.equals(active);
+    }
+
+    public void setActive(Boolean active) {
+        this.active = active;
     }
 }
