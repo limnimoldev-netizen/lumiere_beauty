@@ -6,7 +6,11 @@ import { useAuth } from "../context/AuthContext";
 export default function AdminLogin() {
   const navigate = useNavigate();
   const { user, login } = useAuth();
-  const [formData, setFormData] = useState({ email: "", password: "" });
+
+  const [formData, setFormData] = useState({
+  email: import.meta.env.DEV ? "admin@gmail.com" : "",
+  password: import.meta.env.DEV ? "admin123" : "",
+  });
 
   // already logged in as admin -> go straight to dashboard
   if (user?.role === "ADMIN") return <Navigate to="/admin" replace />;
