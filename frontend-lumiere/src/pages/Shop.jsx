@@ -61,6 +61,10 @@ export default function Shop() {
     if (sort === "high") list.sort((a, b) => b.price - a.price);
     if (sort === "name") list.sort((a, b) => a.name.localeCompare(b.name));
 
+    if (sort === "bestseller") {
+      list = list.filter((p) => p.bestseller === true);
+    }
+
     return list;
   }, [products, brands, categories, brand, active, query, sort]);
   return (
@@ -126,6 +130,7 @@ export default function Shop() {
             onChange={(e) => setSort(e.target.value)}
           >
             <option value="featured">Featured</option>
+            <option value="bestseller">Bestsellers</option>
             <option value="low">Price: low to high</option>
             <option value="high">Price: high to low</option>
             <option value="name">Name</option>

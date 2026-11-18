@@ -25,6 +25,9 @@ public class ProductService {
     
     public Product updateProduct(Long id, Product updatedProduct) {
 
+        System.out.println("Received featured: " + updatedProduct.getFeatured());
+        System.out.println("Received bestseller: " + updatedProduct.getBestseller());
+        
         Product existingProduct = productRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Product not found "));
 
@@ -36,6 +39,8 @@ public class ProductService {
             existingProduct.setImageUrl(updatedProduct.getImageUrl());
             existingProduct.setStock(updatedProduct.getStock());
             existingProduct.setStatus(updatedProduct.getStatus());
+            existingProduct.setFeatured(updatedProduct.getFeatured());
+            existingProduct.setBestseller(updatedProduct.getBestseller());
 
         return productRepository.save(existingProduct);
     }

@@ -59,6 +59,7 @@ export default function AdminProductForm() {
     e.preventDefault();
     setError("");
 
+    // Validation
     if (
       !form.name.trim() ||
       !form.brandId ||
@@ -70,6 +71,7 @@ export default function AdminProductForm() {
       return;
     }
 
+    // Product data
     const product = {
       name: form.name.trim(),
       brandId: Number(form.brandId),
@@ -79,8 +81,12 @@ export default function AdminProductForm() {
       status: form.status,
       imageUrl: form.imageUrl,
       description: form.description,
-    };
 
+      // ADD THESE TWO LINES
+      featured: form.featured,
+      bestseller: form.bestseller,
+    };
+    console.log("Product data:", product);
     try {
       await saveProduct(
         editing ? { ...product, id: Number(id) } : product
