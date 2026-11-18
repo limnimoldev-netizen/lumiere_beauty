@@ -51,7 +51,7 @@ export default function AdminLayout() {
 
         </nav>
 
-        <button onClick={handleLogout} className="btn-primary mt-[5rem] w-full">
+        <button onClick={handleLogout} className="btn-primary mt-[32rem] w-full">
             Log out
         </button>
         
