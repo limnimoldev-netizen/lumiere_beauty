@@ -25,28 +25,36 @@ export default function AdminLayout() {
   return (
     <div className="min-h-screen bg-[#F5F3E9]">
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 border-r border-line bg-[#FBF8F2] p-5 lg:block">
+
         <Link to="/" className="flex items-center gap-3 px-2 py-3">
           <span className="grid h-10 w-10 place-items-center rounded-full bg-blush text-rose">
             <Sparkles size={19} />
           </span>
           <span className="font-display text-2xl text-wine">Lumière.</span>
         </Link>
+
         <p className="eyebrow mb-3 mt-10 px-4 text-sage">Workspace</p>
+
         <nav className="space-y-1">
+
           <NavLink end to="/admin" className={item}>
             <LayoutDashboard size={17} /> Overview
           </NavLink>
+
           <NavLink to="/admin/products" className={item}>
             <Package size={17} /> Products
           </NavLink>
+
           <NavLink to="/admin/users" className={item}>
             <Users size={17} /> User management
           </NavLink>
+
         </nav>
 
-        <button onClick={handleLogout} className="btn-primary mt-[32rem] w-full">
+        <button onClick={handleLogout} className="btn-primary mt-[5rem] w-full">
             Log out
         </button>
+        
         <div className="absolute bottom-6 left-5 right-5">
           <Link
             to="/"
