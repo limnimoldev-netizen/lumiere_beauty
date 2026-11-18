@@ -2,32 +2,58 @@ import { Link, useParams } from "react-router-dom";
 import { ArrowLeft, ShoppingBag, Check } from "lucide-react";
 import { useShop } from "../context/ShopContext";
 import { useEffect, useState } from "react";
-import { productApi } from "../services/api";
+import { productApi, brandApi, categoryApi  } from "../services/api";
 
 export default function ProductDetail() {
   const { id } = useParams();
   const { addToCart } = useShop();
-
+  
   const [products, setProducts] = useState([]);
+  const [brands, setBrands] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         const productsData = await productApi.getAll();
+        const brandsData = await brandApi.getAll();
+        const categoriesData = await categoryApi.getAll();
+
         setProducts(productsData);
+        setBrands(brandsData);
+        setCategories(categoriesData);
+
       } catch (error) {
-        console.error("Failed to fetch products", error);
+        console.error("Failed to fetch products:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchProducts();
-}, []);
+  }, []);
 
   // Find the product using the ID from the URL
   const product = products.find(
     (p) => String(p.id) === String(id)
   );
-    // 3. Check if product exists
+  // Find brand using brandId
+  const brand = brands.find(
+    (b) => Number(b.id) === Number(product?.brandId)
+  );
+  const category = categories.find(
+    (c) => Number(c.id) === Number(product?.categoryId)
+  );
+
+  if (loading) {
+    return (
+      <div className="container-page py-24 text-center">
+        Loading product...
+      </div>
+    );
+  }
+
   if (!product) {
     return (
       <div className="container-page py-24 text-center">
@@ -53,13 +79,20 @@ export default function ProductDetail() {
           alt={product.name}
           className="aspect-[4/5] w-full rounded-2xl bg-white p-8 object-contain"
         />
+        
         <div className="py-5">
-          <p className="eyebrow text-rose">
-            {product.brand} · {product.category}
-          </p>
+         
+          {[brand?.name, category?.name].filter(Boolean).length > 0 && (
+            <p className="eyebrow text-rose">
+              {brand?.name || "Unknown brand"} ·{" "}
+              {category?.name || "Unknown category"}
+            </p>
+          )}
+
           <h1 className="mt-4 font-display text-4xl md:text-5xl">
             {product.name}
           </h1>
+          
           <p className="mt-5 text-xl">${Number(product.price).toFixed(2)}</p>
           <p className="mt-6 leading-7 text-muted">{product.description}</p>
           <p className="mt-6 flex items-center gap-2 text-xs text-muted">

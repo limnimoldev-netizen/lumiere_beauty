@@ -33,6 +33,7 @@ public class UserService {
     }
     return userRepository.save(user);
 }
+
     //login user
     public User login(String email, String password) {
     User user = userRepository.findByEmail(email)
