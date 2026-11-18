@@ -19,6 +19,10 @@ import AdminDashboard from "./pages/AdminDashboard";
 import AdminProducts from "./pages/AdminProducts";
 import AdminProductForm from "./pages/AdminProductForm";
 import AdminUsers from "./pages/AdminUsers";
+
+import AdminLogin from "./pages/AdminLogin";
+import AdminRoute from "./components/AdminRoute";
+
 import RequireAuth from './components/RequireAuth'
 
 function ScrollToTop() {
@@ -61,13 +65,18 @@ function AppRoutes() {
     <>
       <ScrollToTop />
       <Routes>
-        <Route path="/admin" element={<AdminLayout />}>
-          <Route index element={<AdminDashboard />} />
-          <Route path="products" element={<AdminProducts />} />
-          <Route path="products/new" element={<AdminProductForm />} />
-          <Route path="products/:id/edit" element={<AdminProductForm />} />
-          <Route path="users" element={<AdminUsers />} />
+        <Route path="/admin/login" element={<AdminLogin />} />
+
+        <Route element={<AdminRoute />}>
+          <Route path="/admin" element={<AdminLayout />}>
+            <Route index element={<AdminDashboard />} />
+            <Route path="products" element={<AdminProducts />} />
+            <Route path="products/new" element={<AdminProductForm />} />
+            <Route path="products/:id/edit" element={<AdminProductForm />} />
+            <Route path="users" element={<AdminUsers />} />
+          </Route>
         </Route>
+
         <Route path="*" element={<StoreLayout />} />
       </Routes>
     </>

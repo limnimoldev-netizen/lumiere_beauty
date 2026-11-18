@@ -99,6 +99,12 @@ export const categoryApi = {
   },
 };
 
+export const authAPI = {
+  register: (data) => apiClient.post("/users", data),
+  login: (data) => apiClient.post("/auth/login", data),
+};
+
+
 export const authApi = {
   // POST /api/auth/login
   async login(credentials) {
