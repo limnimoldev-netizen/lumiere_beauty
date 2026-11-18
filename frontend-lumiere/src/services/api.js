@@ -129,6 +129,14 @@ export const authApi = {
   },
 };
 
+export const userApi = {
+  // GET /api/users
+  async getAll() {
+    const response = await apiClient.get("/users");
+    return response.data;
+  },
+};
+
 export const orderApi = {
   // POST /api/orders
   async create(orderData) {

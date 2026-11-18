@@ -1,65 +1,83 @@
 import { useEffect, useMemo, useState } from 'react'
-import { UserPlus, Search, ShieldCheck, Shield, UserRound, Ban, CheckCircle2, Trash2 } from 'lucide-react'
+import { UserPlus, Search, UserRound, Ban, Trash2 } from 'lucide-react'
+import { useAuth } from '../context/AuthContext'
+import { userApi } from '../services/api'
 
-const seedUsers = [
-  { id: 1, name: 'Olivia Martin', email: 'olivia@example.com', role: 'Customer', status: 'Active' },
-  { id: 2, name: 'Sophia Chen', email: 'sophia@example.com', role: 'Admin', status: 'Active' },
-  { id: 3, name: 'Amelia Johnson', email: 'amelia@example.com', role: 'Customer', status: 'Active' },
-]
+const adminActionUnavailable = 'This action needs a protected backend admin endpoint.'
 
 export default function AdminUsers() {
-  const [users, setUsers] = useState(() => {
-    try { return JSON.parse(localStorage.getItem('lumiere-admin-users')) || seedUsers }
-    catch { return seedUsers }
-  })
+  const { user } = useAuth()
+  const isAdmin = user?.role?.toUpperCase() === 'ADMIN'
+  const [users, setUsers] = useState([])
+  const [loading, setLoading] = useState(isAdmin)
+  const [error, setError] = useState('')
+  const [retry, setRetry] = useState(0)
   const [query, setQuery] = useState('')
   const [showForm, setShowForm] = useState(false)
-  const [form, setForm] = useState({ name: '', email: '', role: 'Admin' })
-  const [message, setMessage] = useState('')
+  const [form, setForm] = useState({ name: '', email: '', role: 'ADMIN' })
 
-  useEffect(() => { localStorage.setItem('lumiere-admin-users', JSON.stringify(users)) }, [users])
-  const filtered = useMemo(() => users.filter(user => `${user.name} ${user.email} ${user.role}`.toLowerCase().includes(query.toLowerCase())), [users, query])
-
-  const addUser = (event) => {
-    event.preventDefault()
-    if (users.some(user => user.email.toLowerCase() === form.email.trim().toLowerCase())) {
-      setMessage('An account with this email already exists.')
+  useEffect(() => {
+    if (!isAdmin) {
+      setUsers([])
+      setError('Administrator access is required to view user accounts.')
+      setLoading(false)
       return
     }
-    setUsers(current => [{ id: Date.now(), name: form.name.trim(), email: form.email.trim(), role: form.role, status: 'Invited' }, ...current])
-    setForm({ name: '', email: '', role: 'Admin' })
-    setShowForm(false)
-    setMessage('Demo account added. Connect the authentication API to send a real invitation.')
-  }
 
-  const updateUser = (id, changes) => setUsers(current => current.map(user => user.id === id ? { ...user, ...changes } : user))
-  const removeUser = (id) => {
-    if (window.confirm('Remove this account from the demo user list?')) setUsers(current => current.filter(user => user.id !== id))
-  }
+    let cancelled = false
+    const loadUsers = async () => {
+      setLoading(true)
+      setError('')
+      try {
+        const data = await userApi.getAll()
+        if (!Array.isArray(data)) throw new Error('Unexpected users response')
+        if (!cancelled) {
+          setUsers(data.map(({ id, name, email, role }) => ({ id, name, email, role })))
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setUsers([])
+          setError(err.response?.status === 401 || err.response?.status === 403
+            ? 'Your login cannot access the protected users API. Backend admin authentication is required.'
+            : 'Unable to load user accounts. Check the backend connection and try again.')
+        }
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
+    }
+    loadUsers()
+    return () => { cancelled = true }
+  }, [isAdmin, retry])
+
+  const filtered = useMemo(() => users.filter(account =>
+    `${account.id} ${account.name} ${account.email} ${account.role}`.toLowerCase().includes(query.trim().toLowerCase())
+  ), [users, query])
+  const count = loading || error ? '–' : users.length
+  const adminCount = loading || error ? '–' : users.filter(account => account.role?.toUpperCase() === 'ADMIN').length
 
   return <div>
     <div className="flex flex-wrap items-end justify-between gap-4">
       <div><p className="eyebrow text-sage">Store access</p><h1 className="mt-2 font-display text-4xl text-wine">User management</h1><p className="mt-2 text-sm text-muted">Add administrators and manage account roles and access status.</p></div>
-      <button onClick={() => { setShowForm(value => !value); setMessage('') }} className="btn-primary"><UserPlus size={16}/> Add user</button>
+      <button onClick={() => setShowForm(value => !value)} className="btn-primary"><UserPlus size={16}/> Add user</button>
     </div>
 
     <div className="mt-7 grid gap-4 sm:grid-cols-3">
-      <div className="rounded-2xl border border-line bg-white p-5"><p className="text-xs text-muted">Total accounts</p><p className="mt-2 font-display text-3xl text-wine">{users.length}</p></div>
-      <div className="rounded-2xl border border-line bg-white p-5"><p className="text-xs text-muted">Administrators</p><p className="mt-2 font-display text-3xl text-wine">{users.filter(user => user.role === 'Admin').length}</p></div>
-      <div className="rounded-2xl border border-line bg-white p-5"><p className="text-xs text-muted">Active accounts</p><p className="mt-2 font-display text-3xl text-wine">{users.filter(user => user.status === 'Active').length}</p></div>
+      <div className="rounded-2xl border border-line bg-white p-5"><p className="text-xs text-muted">Total accounts</p><p className="mt-2 font-display text-3xl text-wine">{count}</p></div>
+      <div className="rounded-2xl border border-line bg-white p-5"><p className="text-xs text-muted">Administrators</p><p className="mt-2 font-display text-3xl text-wine">{adminCount}</p></div>
+      <div className="rounded-2xl border border-line bg-white p-5"><p className="text-xs text-muted">Active accounts</p><p className="mt-2 font-display text-3xl text-wine">–</p></div>
     </div>
 
-    {showForm && <form onSubmit={addUser} className="mt-6 rounded-2xl border border-line bg-white p-6">
-      <div className="flex items-center justify-between"><div><h2 className="font-display text-2xl text-wine">Add an account</h2><p className="mt-1 text-xs text-muted">Create a demo customer or administrator entry.</p></div><button type="button" onClick={() => setShowForm(false)} className="text-sm text-muted">Close</button></div>
+    {showForm && <form onSubmit={event => event.preventDefault()} className="mt-6 rounded-2xl border border-line bg-white p-6">
+      <div className="flex items-center justify-between"><div><h2 className="font-display text-2xl text-wine">Add an account</h2><p className="mt-1 text-xs text-muted">Account creation needs a protected backend admin endpoint.</p></div><button type="button" onClick={() => setShowForm(false)} className="text-sm text-muted">Close</button></div>
       <div className="mt-5 grid gap-4 md:grid-cols-3">
         <label className="text-xs font-semibold text-ink">Full name<input required className="field mt-2 text-sm" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="e.g. Alex Morgan"/></label>
         <label className="text-xs font-semibold text-ink">Email address<input required type="email" className="field mt-2 text-sm" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} placeholder="name@example.com"/></label>
-        <label className="text-xs font-semibold text-ink">Role<select className="field mt-2 text-sm" value={form.role} onChange={e => setForm({ ...form, role: e.target.value })}><option value="Admin">Admin</option><option value="Customer">Customer</option></select></label>
+        <label className="text-xs font-semibold text-ink">Role<select className="field mt-2 text-sm" value={form.role} onChange={e => setForm({ ...form, role: e.target.value })}><option value="ADMIN">Admin</option><option value="USER">Customer</option></select></label>
       </div>
-      <div className="mt-5 flex flex-wrap gap-3"><button className="btn-primary">Save account</button><button type="button" onClick={() => setShowForm(false)} className="btn-outline">Cancel</button></div>
+      <div className="mt-5 flex flex-wrap gap-3"><button disabled title={adminActionUnavailable} className="btn-primary disabled:cursor-not-allowed disabled:opacity-50">Save account</button><button type="button" onClick={() => setShowForm(false)} className="btn-outline">Cancel</button></div>
     </form>}
 
-    {message && <p className="mt-4 rounded-xl bg-cream p-4 text-sm text-sage">{message}</p>}
+    {error && <div role="alert" className="mt-4 rounded-xl border border-[#E8DED4] bg-[#F5F3E9] p-4 text-sm text-wine">{error}{isAdmin && <button onClick={() => setRetry(value => value + 1)} className="ml-3 font-semibold underline">Retry</button>}</div>}
 
     <div className="mt-7">
       <label className="relative block w-full max-w-xl">
@@ -69,18 +87,19 @@ export default function AdminUsers() {
     </div>
     <div className="mt-5 overflow-hidden rounded-2xl border border-line bg-white">
       <div className="hidden grid-cols-[minmax(180px,1.4fr)_minmax(190px,1.5fr)_minmax(125px,1fr)_minmax(135px,1fr)_112px] items-center gap-4 bg-cream px-5 py-4 text-[11px] font-bold uppercase tracking-wider text-muted md:grid"><span>User</span><span>Email</span><span>Role</span><span>Status</span><span className="text-center">Actions</span></div>
-      {filtered.map(user => <div key={user.id} className="grid gap-4 border-t border-line p-4 md:grid-cols-[minmax(180px,1.4fr)_minmax(190px,1.5fr)_minmax(125px,1fr)_minmax(135px,1fr)_112px] md:items-center md:gap-4 md:px-5 md:py-5">
-        <div className="flex items-center gap-3"><span className="grid h-10 w-10 place-items-center rounded-full bg-blush text-rose"><UserRound size={18}/></span><div><p className="text-sm font-semibold text-ink">{user.name}</p><p className="text-[11px] text-muted">Account #{user.id}</p></div></div>
-        <span className="break-all text-xs text-muted">{user.email}</span>
-        <label className="text-[10px] text-muted md:text-xs">Role<select aria-label={`Role for ${user.name}`} className="field mt-1 py-2 text-xs" value={user.role} onChange={e => updateUser(user.id, { role: e.target.value })}><option>Customer</option><option>Admin</option></select></label>
-        <label className="text-[10px] text-muted md:text-xs">Status<select aria-label={`Status for ${user.name}`} className="field mt-1 py-2 text-xs" value={user.status} onChange={e => updateUser(user.id, { status: e.target.value })}><option>Active</option><option>Invited</option><option>Suspended</option></select></label>
+      {!loading && !error && filtered.map(account => <div key={account.id} className="grid gap-4 border-t border-line p-4 md:grid-cols-[minmax(180px,1.4fr)_minmax(190px,1.5fr)_minmax(125px,1fr)_minmax(135px,1fr)_112px] md:items-center md:gap-4 md:px-5 md:py-5">
+        <div className="flex items-center gap-3"><span className="grid h-10 w-10 place-items-center rounded-full bg-blush text-rose"><UserRound size={18}/></span><div><p className="text-sm font-semibold text-ink">{account.name}</p><p className="text-[11px] text-muted">Account #{account.id}</p></div></div>
+        <span className="break-all text-xs text-muted">{account.email}</span>
+        <label className="text-[10px] text-muted md:text-xs">Role<select disabled title={adminActionUnavailable} aria-label={`Role for ${account.name}`} className="field mt-1 py-2 text-xs" value={account.role}><option value="USER">Customer</option><option value="ADMIN">Admin</option>{!['USER', 'ADMIN'].includes(account.role) && <option value={account.role}>{account.role}</option>}</select></label>
+        <label className="text-[10px] text-muted md:text-xs">Status<select disabled title="Account status is not provided by the backend." aria-label={`Status for ${account.name}`} className="field mt-1 py-2 text-xs" value="unavailable"><option value="unavailable">Unavailable</option></select></label>
         <div className="flex items-center justify-start gap-2 md:justify-center">
-          <button onClick={() => updateUser(user.id, { status: user.status === 'Suspended' ? 'Active' : 'Suspended' })} title={user.status === 'Suspended' ? 'Activate account' : 'Suspend account'} className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-cream text-sage transition hover:bg-blush">{user.status === 'Suspended' ? <CheckCircle2 size={17}/> : <Ban size={17}/>}</button>
-          <button onClick={() => removeUser(user.id)} title="Remove account" className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-cream text-rose transition hover:bg-blush"><Trash2 size={17}/></button>
+          <button disabled title="Account status is not supported by the backend." aria-label={`Suspend ${account.name}`} className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-cream text-sage disabled:cursor-not-allowed disabled:opacity-50"><Ban size={17}/></button>
+          <button disabled title={adminActionUnavailable} aria-label={`Remove ${account.name}`} className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-cream text-rose disabled:cursor-not-allowed disabled:opacity-50"><Trash2 size={17}/></button>
         </div>
       </div>)}
-      {filtered.length === 0 && <p className="p-10 text-center text-sm text-muted">No matching accounts.</p>}
+      {loading && <p role="status" className="p-10 text-center text-sm text-muted">Loading accounts…</p>}
+      {!loading && !error && filtered.length === 0 && <p className="p-10 text-center text-sm text-muted">{users.length === 0 ? 'No accounts found.' : 'No matching accounts.'}</p>}
     </div>
-    <p className="mt-4 rounded-xl border border-[#E8DED4] bg-[#F5F3E9] p-4 text-xs leading-6 text-muted"><strong className="text-wine">Demo limitation:</strong> This page stores sample account records in this browser only. It does not create real login credentials, send invitations, or enforce permissions. Before production, implement backend authentication, password hashing, role-based authorization and protected admin APIs.</p>
+    <p className="mt-4 rounded-xl border border-[#E8DED4] bg-[#F5F3E9] p-4 text-xs leading-6 text-muted"><strong className="text-wine">Backend limitation:</strong> Viewing accounts requires server-issued admin authentication. Account status and protected admin actions are not available yet.</p>
   </div>
 }
