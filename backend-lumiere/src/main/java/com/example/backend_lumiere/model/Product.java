@@ -28,8 +28,10 @@ public class Product {
     private String imageUrl;
 
     private String status;
-
+    private Boolean featured = false;
+    private Boolean bestseller = false;
     private Integer stock;
+
 
     public Product() {
     }
@@ -98,6 +100,22 @@ public class Product {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public Boolean getFeatured() {
+        return featured;
+    }
+
+    public void setFeatured(Boolean featured) {
+        this.featured = featured;
+    }
+
+    public Boolean getBestseller() {
+        return bestseller;
+    }
+
+    public void setBestseller(Boolean bestseller) {
+        this.bestseller = bestseller;
     }
 
     public Integer getStock() {
