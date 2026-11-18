@@ -1,4 +1,5 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useCallback, useContext, useState } from "react";
+import { authApi } from "../services/api.js";
 
 const AuthContext = createContext(null);
 
@@ -11,17 +12,18 @@ export function AuthProvider({ children }) {
     }
   });
 
-  const login = (data) => {
+  const login = useCallback((data) => {
     // Keep only safe fields, never the password
     const safe = { id: data.id, name: data.name, email: data.email, role: data.role };
     localStorage.setItem("user", JSON.stringify(safe));
     setUser(safe);
-  };
+  }, []);
 
-  const logout = () => {
+  const logout = useCallback(() => {
+    authApi.logout().catch(() => {});
     localStorage.removeItem("user");
     setUser(null);
-  };
+  }, []);
 
   return (
     <AuthContext.Provider value={{ user, login, logout }}>

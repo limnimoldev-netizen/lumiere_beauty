@@ -37,8 +37,9 @@ export default function Auth({ register = false }) {
             password: formData.password,
           });
 
-      login(result.data ?? result);
-      navigate(redirectTo, { replace: true });
+      const account = result.data ?? result;
+      login(account);
+      navigate(!register && account.role?.toUpperCase() === "ADMIN" ? "/admin" : redirectTo, { replace: true });
     } catch (error) {
       console.error(error);
 

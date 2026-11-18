@@ -10,6 +10,7 @@ const apiClient = axios.create({
     "Content-Type": "application/json",
   },
   timeout: 10000,
+  withCredentials: true,
 });
 
 export const productApi = {
@@ -106,6 +107,10 @@ export const authAPI = {
 
 
 export const authApi = {
+  async me() {
+    const response = await apiClient.get("/auth/me");
+    return response.data;
+  },
   // POST /api/auth/login
   async login(credentials) {
     try {
@@ -127,6 +132,7 @@ export const authApi = {
       throw error;
     }
   },
+  logout: () => apiClient.post("/auth/logout"),
 };
 
 export const userApi = {
@@ -134,6 +140,21 @@ export const userApi = {
   async getAll() {
     const response = await apiClient.get("/users");
     return response.data;
+  },
+  async create(data) {
+    const response = await apiClient.post("/users/admin", data);
+    return response.data;
+  },
+  async changeRole(id, role) {
+    const response = await apiClient.patch(`/users/${id}/role`, { role });
+    return response.data;
+  },
+  async changeStatus(id, active) {
+    const response = await apiClient.patch(`/users/${id}/status`, { active });
+    return response.data;
+  },
+  async remove(id) {
+    await apiClient.delete(`/users/${id}`);
   },
 };
 

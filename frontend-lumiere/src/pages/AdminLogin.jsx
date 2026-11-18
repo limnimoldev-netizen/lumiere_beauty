@@ -8,12 +8,12 @@ export default function AdminLogin() {
   const { user, login } = useAuth();
 
   const [formData, setFormData] = useState({
-  email: import.meta.env.DEV ? "admin@gmail.com" : "",
-  password: import.meta.env.DEV ? "admin123" : "",
+  email: "",
+  password: "",
   });
 
   // already logged in as admin -> go straight to dashboard
-  if (user?.role === "ADMIN") return <Navigate to="/admin" replace />;
+  if (user?.role?.toUpperCase() === "ADMIN") return <Navigate to="/admin" replace />;
 
   const handleChange = (e) =>
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -22,11 +22,10 @@ export default function AdminLogin() {
     e.preventDefault();
     try {
       const result = await authAPI.login(formData);
-      console.log("Login result:", result);
 
       const data = result?.data ?? result;
 
-      if (data?.role !== "ADMIN") {
+      if (data?.role?.toUpperCase() !== "ADMIN") {
         alert("Access denied. Admin accounts only.");
         return; // do NOT call login(), so nothing is saved
       }
