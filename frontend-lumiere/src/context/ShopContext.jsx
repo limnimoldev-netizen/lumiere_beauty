@@ -112,6 +112,8 @@ export function ShopProvider({ children }) {
     }
   };
 
+  const clearCart = () => setCart([]);
+
   const value = useMemo(
     () => ({
       products,
@@ -119,6 +121,7 @@ export function ShopProvider({ children }) {
       addToCart,
       updateQuantity,
       removeFromCart,
+      clearCart,
       saveProduct,
       deleteProduct,
     }),

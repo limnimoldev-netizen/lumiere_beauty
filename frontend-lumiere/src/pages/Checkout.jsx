@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import { useShop } from "../context/ShopContext";
 
 const API_URL = "http://localhost:8080/api/orders/checkout";
@@ -9,6 +9,7 @@ export default function Checkout() {
   const [done, setDone] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const submittingRef = useRef(false); // blocks double submits synchronously
   const [form, setForm] = useState({
     customerName: "",
     email: "",
@@ -25,6 +26,8 @@ export default function Checkout() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (submittingRef.current) return; // ignore clicks while a request is in flight
+    submittingRef.current = true;
     setLoading(true);
     setError("");
 
@@ -54,6 +57,7 @@ export default function Checkout() {
     } catch {
       setError("Cannot reach the server. Is Spring Boot running?");
     } finally {
+      submittingRef.current = false;
       setLoading(false);
     }
   };
@@ -106,7 +110,7 @@ export default function Checkout() {
 
           {error && <p className="text-sm text-red-600">{error}</p>}
 
-          <button disabled={loading} className="btn-primary w-full">
+          <button type="submit" disabled={loading} className="btn-primary w-full">
             {loading ? "Placing order..." : "Place order"}
           </button>
         </div>

@@ -7,11 +7,14 @@ import com.example.backend_lumiere.model.OrderItem;
 import com.example.backend_lumiere.model.Product;
 import com.example.backend_lumiere.repository.OrderRepository;
 import com.example.backend_lumiere.repository.ProductRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 public class OrderService {
@@ -67,5 +70,21 @@ public class OrderService {
 
         order.setTotalAmount(total);
         return orderRepository.save(order);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Order> getAllOrders() {
+        return orderRepository.findAll();
+    }
+
+    @Transactional(readOnly = true)
+    public Order getOrderById(Long id) {
+        return orderRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
+    }
+
+    @Transactional(readOnly = true)
+    public List<Order> getOrdersByEmail(String email) {
+        return orderRepository.findByEmailIgnoreCaseOrderByCreatedAtDesc(email.trim());
     }
 }
