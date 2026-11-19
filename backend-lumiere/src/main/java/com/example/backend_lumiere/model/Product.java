@@ -2,6 +2,7 @@ package com.example.backend_lumiere.model;
 
 import jakarta.persistence.*;
 import java.math.BigDecimal;
+import jakarta.validation.constraints.*;
 
 @Entity
 @Table(name = "products")
@@ -11,14 +12,18 @@ public class Product {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank(message = "Product name is required")
     private String name;
 
+    @NotNull(message = "Brand is required")
     @Column(name = "brand_id")
     private Long brandId;
 
     @Column(name = "category_id")
     private Long categoryId;
 
+    @NotNull(message = "Product price is required")
+    @Positive(message = "Product price must be greater than zero")
     @Column(precision = 10, scale = 2)
     private BigDecimal price;
 
