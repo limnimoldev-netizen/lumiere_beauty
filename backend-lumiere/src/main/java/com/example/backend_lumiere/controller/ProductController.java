@@ -3,6 +3,9 @@ package com.example.backend_lumiere.controller;
 import com.example.backend_lumiere.model.Product;
 import com.example.backend_lumiere.service.ProductService;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import jakarta.validation.Valid;
 
 import java.util.List;
 
@@ -23,9 +26,17 @@ public class ProductController {
     }
 
     @PostMapping
-    public Product createProduct(@RequestBody Product product) {
-        return productService.createProduct(product);
+    public ResponseEntity<Product> createProduct(
+            @Valid @RequestBody Product product) {
+
+        Product savedProduct =
+                productService.createProduct(product);
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(savedProduct);
     }
+
 
     @PutMapping("/{id}")
     public Product updateProduct(
@@ -40,4 +51,9 @@ public class ProductController {
         productService.deleteProduct(id);
     }
 
+
+    @GetMapping("/{id}")
+    public Product getProductById(@PathVariable Long id) {
+        return productService.getProductById(id);
+    }
 }

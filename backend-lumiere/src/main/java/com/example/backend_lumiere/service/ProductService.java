@@ -3,6 +3,7 @@ package com.example.backend_lumiere.service;
 import com.example.backend_lumiere.model.Product;
 import com.example.backend_lumiere.repository.ProductRepository;
 import org.springframework.stereotype.Service;
+import com.example.backend_lumiere.exception.ProductNotFoundException;
 
 import java.util.List;
 
@@ -47,6 +48,15 @@ public class ProductService {
 
     public void deleteProduct(Long id) {
         productRepository.deleteById(id);
+    }
+
+    public Product getProductById(Long id) {
+        return productRepository.findById(id)
+                .orElseThrow(() ->
+                    new ProductNotFoundException(
+                        "Product with ID " + id + " does not exist"
+                    )
+                );
     }
 }
 
