@@ -19,10 +19,10 @@ export default function AdminLayout() {
 
   const closeMenu = () => setOpen(false);
 
-  const handleLogout = () => {
-    navigate("/admin/login", { replace: true });
-    logout();
-  };
+const handleLogout = () => {
+  logout();                    // clears localStorage and user
+  window.location.replace("/"); // full load at home; no route guard runs first
+};
 
   const item = ({ isActive }) =>
     `flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition ${
