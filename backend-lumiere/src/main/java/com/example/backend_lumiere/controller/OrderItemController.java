@@ -1,14 +1,16 @@
 package com.example.backend_lumiere.controller;
 
-import com.example.backend_lumiere.model.Order;
+import com.example.backend_lumiere.model.OrderItem;
 import com.example.backend_lumiere.service.OrderItemService;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/orders")
+@RequestMapping("/api/order-items")
 public class OrderItemController {
 
     private final OrderItemService orderItemService;
@@ -17,19 +19,13 @@ public class OrderItemController {
         this.orderItemService = orderItemService;
     }
 
-    @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    public Order createOrder(@RequestBody Order order) {
-        return orderItemService.createOrder(order);
-    }
-
     @GetMapping
-    public List<Order> getAllOrders() {
-        return orderItemService.getAllOrders();
+    public List<OrderItem> getAllOrderItems() {
+        return orderItemService.getAllOrderItems();
     }
 
     @GetMapping("/{id}")
-    public Order getOrderById(@PathVariable Long id) {
-        return orderItemService.getOrderById(id);
+    public OrderItem getOrderItemById(@PathVariable Long id) {
+        return orderItemService.getOrderItemById(id);
     }
 }
