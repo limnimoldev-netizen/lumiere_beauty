@@ -32,11 +32,6 @@ public class UserService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
     }
 
-    public User getUserByEmail(String email) {
-        return userRepository.findByEmail(email)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED));
-    }
-
     // Create user
    public User createUser(User user) {
     user.setId(null);
@@ -81,24 +76,15 @@ public class UserService {
         return normalized;
     }
 
-    //login user
-    public User login(String email, String password) {
-    User user = userRepository.findByEmail(email)
-            .orElseThrow(() -> new RuntimeException("Invalid email or password"));
-
-    if (!user.isActive() || !passwordEncoder.matches(password, user.getPassword())) {
-        throw new RuntimeException("Invalid email or password");
-    }
-    return user;
-}
-
     // Update user
     public User updateUser(Long id, User newUser) {
         User existingUser = getUserById(id);
 
         existingUser.setName(newUser.getName());
         existingUser.setEmail(newUser.getEmail());
-        existingUser.setPassword(newUser.getPassword());
+        if (newUser.getPassword() != null && !newUser.getPassword().isBlank()) {
+            existingUser.setPassword(passwordEncoder.encode(newUser.getPassword()));
+        }
         existingUser.setRole(newUser.getRole());
 
         return userRepository.save(existingUser);
