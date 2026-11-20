@@ -37,9 +37,12 @@ public class UserController {
 
     // POST: Create a new user
     @PostMapping
-    public User createUser(@RequestBody User user) {
-        return userService.createUser(user);
+    public User createUser(@Valid @RequestBody RegistrationRequest request) {
+        return userService.createUser(request.name(), request.email(), request.password());
     }
+
+    public record RegistrationRequest(@NotBlank String name, @Email @NotBlank String email,
+                                      @NotBlank @Size(min = 8) String password) {}
 
     public record ManagedUserRequest(@NotBlank String name, @Email @NotBlank String email,
                                      @NotBlank @Size(min = 8) String password, @NotBlank String role) {}

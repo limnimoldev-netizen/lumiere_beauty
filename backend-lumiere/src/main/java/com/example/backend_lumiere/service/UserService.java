@@ -1,14 +1,15 @@
 package com.example.backend_lumiere.service;
 
-import com.example.backend_lumiere.model.User;
-import com.example.backend_lumiere.repository.UserRepository;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.server.ResponseStatusException;
-
 import java.util.List;
 import java.util.Locale;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+
+import com.example.backend_lumiere.model.User;
+import com.example.backend_lumiere.repository.UserRepository;
 
 @Service
 public class UserService {
@@ -33,17 +34,13 @@ public class UserService {
     }
 
     // Create user
-   public User createUser(User user) {
-    user.setId(null);
-    user.setRole("CUSTOMER");
-    user.setActive(true);
-    user.setPassword(passwordEncoder.encode(user.getPassword()));
-    return userRepository.save(user);
-}
+    public User createUser(String name, String email, String password) {
+        return createManagedUser(name, email, password, "CUSTOMER");
+    }
 
     public User createManagedUser(String name, String email, String password, String role) {
         String normalizedEmail = email.trim().toLowerCase(Locale.ROOT);
-        if (userRepository.findByEmail(normalizedEmail).isPresent()) {
+        if (userRepository.findByEmailIgnoreCase(normalizedEmail).isPresent()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Email is already registered");
         }
         User user = new User();
