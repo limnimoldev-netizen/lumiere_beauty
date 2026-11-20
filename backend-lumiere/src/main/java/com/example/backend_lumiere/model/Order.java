@@ -15,11 +15,11 @@ public class Order {
     @Column(name = "user_id")
     private Long userId;
 
-    @Column(name = "delivery_address")
-    private Long deliveryAddress;
+    @Column(name = "address")
+    private String deliveryAddress;
 
     @Column(name = "payment_method")
-    private Long paymentMethod;
+    private String paymentMethod;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItem> items = new ArrayList<>();
@@ -31,18 +31,43 @@ public class Order {
         item.setOrder(this);
     }
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public Long getId() {
+        return id;
+    }
 
-    public Long getUserId() { return userId; }
-    public void setUserId(Long userId) { this.userId = userId; }
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-    public Long getDeliveryAddress() { return deliveryAddress; }
-    public void setDeliveryAddress(Long deliveryAddress) { this.deliveryAddress = deliveryAddress; }
+    public Long getUserId() {
+        return userId;
+    }
 
-    public Long getPaymentMethod() { return paymentMethod; }
-    public void setPaymentMethod(Long paymentMethod) { this.paymentMethod = paymentMethod; }
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
 
-    public List<OrderItem> getItems() { return items; }
-    public void setItems(List<OrderItem> items) { this.items = items; }
+    public String getDeliveryAddress() {
+        return deliveryAddress;
+    }
+
+    public void setDeliveryAddress(String deliveryAddress) {
+        this.deliveryAddress = deliveryAddress;
+    }
+
+    public String getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(String paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
+
+    public List<OrderItem> getItems() {
+        return items;
+    }
+
+    public void setItems(List<OrderItem> items) {
+        this.items = items;
+    }
 }
