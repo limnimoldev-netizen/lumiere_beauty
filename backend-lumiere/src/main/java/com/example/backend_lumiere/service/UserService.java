@@ -1,14 +1,15 @@
 package com.example.backend_lumiere.service;
 
-import com.example.backend_lumiere.model.User;
-import com.example.backend_lumiere.repository.UserRepository;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.server.ResponseStatusException;
-
 import java.util.List;
 import java.util.Locale;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+
+import com.example.backend_lumiere.model.User;
+import com.example.backend_lumiere.repository.UserRepository;
 
 @Service
 public class UserService {
@@ -29,7 +30,7 @@ public class UserService {
     // Get user by ID
     public User getUserById(Long id) {
         return userRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+                .orElseThrow(() -> new RuntimeException("User not found"));
     }
 
     // Create user
@@ -72,27 +73,16 @@ public class UserService {
         return normalized;
     }
 
-    //login user
-    public User login(String email, String password) {
-    User user = userRepository.findByEmailIgnoreCase(email == null ? "" : email.trim())
-            .orElseThrow(() -> new RuntimeException("Invalid email or password"));
-
-    if (!user.isActive() || !passwordEncoder.matches(password, user.getPassword())) {
-        throw new RuntimeException("Invalid email or password");
-    }
-    return user;
-}
-
     // Update user
     public User updateUser(Long id, User newUser) {
         User existingUser = getUserById(id);
 
         existingUser.setName(newUser.getName());
-        existingUser.setEmail(newUser.getEmail().trim().toLowerCase(Locale.ROOT));
+        existingUser.setEmail(newUser.getEmail());
         if (newUser.getPassword() != null && !newUser.getPassword().isBlank()) {
             existingUser.setPassword(passwordEncoder.encode(newUser.getPassword()));
         }
-        existingUser.setRole(normalizeRole(newUser.getRole()));
+        existingUser.setRole(newUser.getRole());
 
         return userRepository.save(existingUser);
     }
