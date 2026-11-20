@@ -29,26 +29,17 @@ public class UserService {
     // Get user by ID
     public User getUserById(Long id) {
         return userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-    }
-
-    public User getUserByEmail(String email) {
-        return userRepository.findByEmail(email)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
     }
 
     // Create user
-   public User createUser(User user) {
-    user.setId(null);
-    user.setRole("CUSTOMER");
-    user.setActive(true);
-    user.setPassword(passwordEncoder.encode(user.getPassword()));
-    return userRepository.save(user);
-}
+    public User createUser(String name, String email, String password) {
+        return createManagedUser(name, email, password, "CUSTOMER");
+    }
 
     public User createManagedUser(String name, String email, String password, String role) {
         String normalizedEmail = email.trim().toLowerCase(Locale.ROOT);
-        if (userRepository.findByEmail(normalizedEmail).isPresent()) {
+        if (userRepository.findByEmailIgnoreCase(normalizedEmail).isPresent()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Email is already registered");
         }
         User user = new User();
@@ -83,7 +74,7 @@ public class UserService {
 
     //login user
     public User login(String email, String password) {
-    User user = userRepository.findByEmail(email)
+    User user = userRepository.findByEmailIgnoreCase(email == null ? "" : email.trim())
             .orElseThrow(() -> new RuntimeException("Invalid email or password"));
 
     if (!user.isActive() || !passwordEncoder.matches(password, user.getPassword())) {
@@ -97,9 +88,11 @@ public class UserService {
         User existingUser = getUserById(id);
 
         existingUser.setName(newUser.getName());
-        existingUser.setEmail(newUser.getEmail());
-        existingUser.setPassword(newUser.getPassword());
-        existingUser.setRole(newUser.getRole());
+        existingUser.setEmail(newUser.getEmail().trim().toLowerCase(Locale.ROOT));
+        if (newUser.getPassword() != null && !newUser.getPassword().isBlank()) {
+            existingUser.setPassword(passwordEncoder.encode(newUser.getPassword()));
+        }
+        existingUser.setRole(normalizeRole(newUser.getRole()));
 
         return userRepository.save(existingUser);
     }

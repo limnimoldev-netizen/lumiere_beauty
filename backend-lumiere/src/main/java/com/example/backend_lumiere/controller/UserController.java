@@ -5,9 +5,7 @@ import com.example.backend_lumiere.service.UserService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.security.Principal;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.server.ResponseStatusException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -39,9 +37,12 @@ public class UserController {
 
     // POST: Create a new user
     @PostMapping
-    public User createUser(@RequestBody User user) {
-        return userService.createUser(user);
+    public User createUser(@Valid @RequestBody RegistrationRequest request) {
+        return userService.createUser(request.name(), request.email(), request.password());
     }
+
+    public record RegistrationRequest(@NotBlank String name, @Email @NotBlank String email,
+                                      @NotBlank @Size(min = 8) String password) {}
 
     public record ManagedUserRequest(@NotBlank String name, @Email @NotBlank String email,
                                      @NotBlank @Size(min = 8) String password, @NotBlank String role) {}
@@ -57,20 +58,12 @@ public class UserController {
     }
 
     @PatchMapping("/{id}/role")
-    public User changeRole(@PathVariable Long id, @Valid @RequestBody RoleRequest request, Principal principal) {
-        User existing = userService.getUserById(id);
-        if (existing.getEmail().equalsIgnoreCase(principal.getName())) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You cannot change your own role");
-        }
+    public User changeRole(@PathVariable Long id, @Valid @RequestBody RoleRequest request) {
         return userService.changeRole(id, request.role());
     }
 
     @PatchMapping("/{id}/status")
-    public User changeStatus(@PathVariable Long id, @Valid @RequestBody StatusRequest request, Principal principal) {
-        User existing = userService.getUserById(id);
-        if (existing.getEmail().equalsIgnoreCase(principal.getName())) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You cannot change your own status");
-        }
+    public User changeStatus(@PathVariable Long id, @Valid @RequestBody StatusRequest request) {
         return userService.changeStatus(id, request.active());
     }
 
@@ -84,10 +77,7 @@ public class UserController {
 
     // DELETE: Delete user
     @DeleteMapping("/{id}")
-    public String deleteUser(@PathVariable Long id, Principal principal) {
-        if (principal != null && userService.getUserById(id).getEmail().equalsIgnoreCase(principal.getName())) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You cannot delete your own account");
-        }
+    public String deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);
         return "User deleted successfully";
     }
